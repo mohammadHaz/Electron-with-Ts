@@ -1,0 +1,81 @@
+import { userFriendlyTime } from "@/shared/functins";
+import { INoteData, TNote } from "@/shared/types";
+import { useMainStore } from "@/shared/zust-store";
+import clsx from "clsx";
+import { Maximize, Minus, X } from "lucide-react";
+import React from "react";
+
+export const WindowButtons = React.memo(() => {
+  return (
+    <div className="window-buttons flex [&>div]:hover:bg-[#e7e5e4] dark:[&>div]:hover:bg-[#1c1917]">
+      {/* زر التصغير */}
+      <div
+        className="p-2 flex justify-center items-center cursor-pointer"
+        onClick={() => window.electron.minimizeApp()}
+      >
+        <Minus className="w-[20px] h-[20px] text-black dark:text-[#e7e5e4]" />
+      </div>
+
+      {/* زر التكبير */}
+      <div
+        className="p-2 flex justify-center items-center cursor-pointer"
+        onClick={() => window.electron.maximizeApp()}
+      >
+        <Maximize className="w-[20px] h-[20px] text-black dark:text-[#e7e5e4]" />
+      </div>
+
+      {/* زر الإغلاق */}
+      <div
+        className="p-2 flex justify-center items-center cursor-pointer"
+        onClick={() => window.electron.closeApp()}
+      >
+        <X className="w-[20px] h-[20px] text-black dark:text-[#e7e5e4]" />
+      </div>
+    </div>
+  );
+});
+
+
+export const NotesItem = React.memo((props: {note: INoteData; onClick:(Function)}) => {
+    const active_note = useMainStore(state => state.active_note)
+
+    return (
+        // className class مبني باستخدام مكتبة clsx
+      // clsx تسمح بدمج كلاسات ثابتة + كلاسات شرطية
+
+        <div  className={clsx('w-[100%] p-4 [&.active]:rounded-2xl cursor-pointer',{'active':active_note.id==props.note.id})} onClick={()=>props.onClick(props.note)}>
+              <div className='font-bold text-md'>
+                {(props.note.note as TNote)?.blocks?.[0]?.data?.text || "Untitled Note"}
+              </div>
+            <div className='flex text-xs text-stone-800 dark:text-stone-300'>
+                <div>{userFriendlyTime((props.note.note as TNote).time)}</div>
+                <div className='flex-1 ml-2 truncate'>
+                {/* {
+                  (props.note.note as TNote).blocks.length == 0 ?
+                  (props.note.note as TNote).blocks[0].data.text:
+                  (props.note.note as TNote).blocks[1].data.text
+                } */}
+                
+                  this note is fress
+                
+                </div>
+            </div>
+        </div>
+    )
+})
+
+export const NotesList = React.memo((props: any) => {
+    return (
+        <div className='w-[100%] p-3 [&_.active]:bg-stone-200 dark:[&_.active]:bg-sky-900'>
+            <div className='text-md capitalize'>{props.section}</div>
+            <div className='divide-y-1 divide-y-stone-700 dark:divide-y-stone-400'>
+            
+            {
+              props.data.map((note :INoteData)=><NotesItem key={note.id} note={note} onClick={props.onClick}/>)
+            
+            }
+
+            </div>
+        </div>
+    )
+})

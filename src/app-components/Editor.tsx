@@ -6,9 +6,9 @@ export default React.memo((props:any)=>{
     const active_note =useMainStore(state=>state.active_note)
     const set_state=useMainStore(state=>state.set_state);
     const handle_change=React.useCallback((api:any,event:any)=>{
-        console.log("api",api);
+        // console.log("api",api);
         api.saver.save().then((data:any)=>{
-            console.log("database",data);
+            // console.log("database",data);
             window.electron.set_note({
                 id: props.note != undefined ? props.note.id : active_note.id,
                 note:JSON.stringify(data)

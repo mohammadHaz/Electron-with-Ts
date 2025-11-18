@@ -17,7 +17,7 @@ export default React.memo((props:any)=>{
       const notes = useMainStore(state => state.notes);
   const set_state=useMainStore(state=>state.set_state);
   // const [notes,set_notes]=React.useState<INoteData[]>([])
-// const section_notes = React.useMemo(() => sectionize_notes(notes), [notes]);
+const section_notes = React.useMemo(() => sectionize_notes(notes), [notes]);
 
 
 const handle_create_new_note=React.useCallback(async()=>{
@@ -42,21 +42,21 @@ console.log(note);
 // useLayoutEffect: مثل useEffect لكنه ينفّذ قبل رسم الواجهة (DOM Paint)
 // تستخدمه عندما بدك التغيير يصير مباشرة قبل ما الشاشة تنعرض
 React.useLayoutEffect(() => {
-   window.electron.fetch_all_notes();
+  //  window.electron.fetch_all_notes();
   // نضيف "listener" على window ليستقبل الحدث 'all-note-data'
   // هذا الحدث عم تجيبه من الـ Electron preload لما الداتا تتغيّر بالقاعدة
   window.addEventListener(
     'all-note-data',
     (ev: Event & { detail: INoteData[] }) => { 
       // (ev.detail) يحتوي على كل الملاحظات الجديدة القادم من electron
-      console.log("ev", ev.detail[0]);
 
       // نحط أول ملاحظة كـ "الملاحظة النشطة"
       // لأن ev.detail[0] يعني آخر نوت تم تعديلها (حسب ترتيبك)
-      set_state('active_note', ev.detail[0]);
+      console.log("ev", ev.detail);
+
+      set_state('active_note', ev.detail[4]);
 
       // لعرض الملاحظات الجديدة على الكونسول
-      console.log("ev", ev.detail);
 
       // نخزن الملاحظات في الـ zustand store
       // حتى باقي الواجهة تعرف أنه تم تحديث قائمة الملاحظات
@@ -74,18 +74,18 @@ React.useLayoutEffect(() => {
 
           <ScrollArea className="h-[calc(100%-40px)]">
           {
-          //  notes.length == 0?
-          // <div className='h-100 flex font-medium items-center justify-center text-sm text-stone-600 dark:text-stone-500'>
-          // <span>No notes</span>
-          //  </div>:
-          //     Object.keys(section_notes).map(section => (
-          //       <NotesList
-          //         key={section}
-          //         section={section}
-          //         data={section_notes[section as keyof typeof section_notes]}
-          //         onClick={handle_set_active_note}
-          //       />
-          //     ))
+           notes.length == 0?
+          <div className='h-100 flex font-medium items-center justify-center text-sm text-stone-600 dark:text-stone-500'>
+          <span>No notes</span>
+           </div>:
+              Object.keys(section_notes).map(section => (
+                <NotesList
+                  key={section}
+                  section={section}
+                  data={section_notes[section as keyof typeof section_notes]}
+                  onClick={handle_set_active_note}
+                />
+              ))
           }
           </ScrollArea>
           

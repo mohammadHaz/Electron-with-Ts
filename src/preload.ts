@@ -7,10 +7,9 @@ import { broadcast_event } from "./shared/events";
 
 ipcRenderer.on("onstart-notes-data",(event,data)=>{
     document.onreadystatechange=(event)=>{
-        console.log("event onreadystatechange", data);     
-      setTimeout(()=>{
+     console.log("event onreadystatechange", data);     
         window.dispatchEvent(broadcast_event("all-note-data",data));
-      },0)
+
     }
 })
 
@@ -30,7 +29,7 @@ const renderer={
     },
     set_note: async (data: any, explicit=false): Promise<INoteData[]> => {
         const notes = await ipcRenderer.invoke('set-note', data)
-        console.log("notes", notes);
+        // console.log("notes", notes);
         if (explicit) {
             window.dispatchEvent(broadcast_event('all-note-data', notes));
             return;
@@ -41,8 +40,8 @@ const renderer={
 
     // 1️⃣ استدعاء دالة من الـ Main Process باستخدام invoke
     // هذا يعني: اطلب من الـ main أن يرجّع كل الملاحظات من قاعدة البيانات
-    const all_notes = await ipcRenderer.send("fetch-all-notes");
-    console.log("all_notes",all_notes)
+    const all_notes = await ipcRenderer.invoke("fetch-all-notes");
+    // console.log("all_notes",all_notes)
  
     // 2️⃣ بعد استلام الملاحظات من الـ main
     // نعمل event مخصص اسمه "all-notes-data" ونبعث معه كل الملاحظات

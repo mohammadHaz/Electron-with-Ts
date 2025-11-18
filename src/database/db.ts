@@ -13,7 +13,7 @@ const create_notes_table = () => {
     // الجدول يحتوي على عمودين: id (رقم تلقائي) و note (نص الملاحظة)
 }
 
-export const set_note = (data: INoteData, callback: Function) => {
+export const set_notes = (data: INoteData, callback: Function) => {
     // دالة لإضافة أو تعديل ملاحظة في قاعدة البيانات
     db.serialize(() => { 
         // serialize: تجعل العمليات تنفذ بترتيب متسلسل (واحدة تلو الأخرى)

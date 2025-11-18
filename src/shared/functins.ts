@@ -39,7 +39,7 @@ export const sectionize_notes = (notes: INoteData[]) => {
         sections['today'] = todays_notes
     }
 
-    console.log("sections", sections);
+    // console.log("sections", sections);
     
     if (yesterdays_notes.length > 0) {
         sections['yesterday'] = yesterdays_notes

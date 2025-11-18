@@ -16,7 +16,7 @@ export default React.memo((props:any)=>{
     React.useEffect(()=>{
         const real_note = props.note?.note || active_note.note
         const note = typeof real_note == 'string' ? JSON.parse(real_note as string) : real_note
-        console.log("Active note", active_note, typeof real_note, note);
+        // console.log("Active note", active_note, typeof real_note, note);
 
         if (editor_ref.current != undefined) editor_ref.current.destroy()
         editor_ref.current =new EditorJS({

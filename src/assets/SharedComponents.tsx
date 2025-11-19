@@ -38,27 +38,31 @@ export const WindowButtons = React.memo(() => {
 
 export const NotesItem = React.memo((props: {note: INoteData; onClick:(Function)}) => {
     const active_note = useMainStore(state => state.active_note)
+     console.log("active_note",active_note)
+      console.log("active_note--1",props.note)
 
     return (
         // className class مبني باستخدام مكتبة clsx
       // clsx تسمح بدمج كلاسات ثابتة + كلاسات شرطية
 
         <div  className={clsx('w-[100%] p-4 [&.active]:rounded-2xl cursor-pointer',{'active':active_note.id==props.note.id})} onClick={()=>props.onClick(props.note)}>
-              <div className='font-bold text-md'>
-                {(props.note.note as TNote)?.blocks?.[0]?.data?.text || "Untitled Note"}
+              <div className='font-bold text-md' dangerouslySetInnerHTML={{__html:Object.keys((props.note.note as TNote)).length == 0 ? "New note" :(props.note.note as TNote)?.blocks?.[0]?.data?.text || "Untitled Note"}}>
               </div>
             <div className='flex text-xs text-stone-800 dark:text-stone-300'>
-                <div>{userFriendlyTime((props.note.note as TNote).time)}</div>
-                <div className='flex-1 ml-2 truncate'>
-                {/* {
-                  (props.note.note as TNote).blocks.length == 0 ?
+                <div>{Object.keys((props.note.note as TNote)).length == 0 ? "": userFriendlyTime((props.note.note as TNote).time) }</div>
+
+                <div className='flex-1 ml-2 truncate'
+                 dangerouslySetInnerHTML={
+                  {__html:Object.keys((props.note.note as TNote)).length ==0 ?
+                "New note" :
+                  (props.note.note as TNote).blocks.length == 1 ?
                   (props.note.note as TNote).blocks[0].data.text:
-                  (props.note.note as TNote).blocks[1].data.text
-                } */}
-                
-                  this note is fress
-                
-                </div>
+                  (props.note.note as TNote).blocks[1].data.text}
+                  }
+                  >
+                </div> 
+
+
             </div>
         </div>
     )
@@ -70,11 +74,12 @@ export const NotesList = React.memo((props: any) => {
             <div className='text-md capitalize'>{props.section}</div>
             <div className='divide-y-1 divide-y-stone-700 dark:divide-y-stone-400'>
             
-            {
-              props.data.map((note :INoteData)=><NotesItem key={note.id} note={note} onClick={props.onClick}/>)
             
-            }
+              {
 
+            props.data.map((note :INoteData)=><NotesItem key={Math.floor(Math.random() * 9999)} note={note} onClick={props.onClick}/>)
+
+              }
             </div>
         </div>
     )

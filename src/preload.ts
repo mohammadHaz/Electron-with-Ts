@@ -47,7 +47,24 @@ const renderer={
     // نعمل event مخصص اسمه "all-notes-data" ونبعث معه كل الملاحظات
     // الفكرة: نرسلها للواجهة (React) بدون استخدام ipcRenderer.on
     window.dispatchEvent(broadcast_event('all-note-data', all_notes));
-    }
+    },
+   delete_note : async (note_id:string)=>{
+     const delete_note = await ipcRenderer.invoke("delete-note",note_id);
+      window.dispatchEvent(broadcast_event('all-note-data', delete_note));
+
+   },
+
+   get_note: async(note_id :string)=>{
+     return await  ipcRenderer.invoke("get-note",note_id);
+
+   },
+   open_note_in_child_proc:(note_id:string)=>{
+    ipcRenderer.send("open-note-in-child-process",note_id)
+   },
+   open_note_in_item_context:(note_id:string)=>{
+    ipcRenderer.send("open-note-in-item-context",note_id)
+   }
+   
 } 
 
 contextBridge.exposeInMainWorld('electron',renderer)

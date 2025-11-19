@@ -8,10 +8,14 @@ import { WindowButtons ,NotesList } from "@/assets/SharedComponents"
 import Editor from "./Editor"
 import { useMainStore } from "@/shared/zust-store"
 import EmptyNoteUI from "./EmptyNoteUI"
-import { INoteData } from "@/shared/types"
+import { INoteData, TNote } from "@/shared/types"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { sectionize_notes } from "@/shared/functins"
-import { Section } from "lucide-react"
+import { PenBox, Section, Trash } from "lucide-react"
+
+const sort_notes = (a: INoteData, b: INoteData) => {
+  return (b.note as TNote).time - (a.note as TNote).time;
+};
 export default React.memo((props:any)=>{
   const active_note=useMainStore(state=>state.active_note)
       const notes = useMainStore(state => state.notes);
@@ -26,9 +30,10 @@ const handle_create_new_note=React.useCallback(async()=>{
     note:"{}",
   } as INoteData
   const notes=await window.electron.set_note(dummy_date)
-  set_state('active_note',notes[0])
+const sort_note = [...notes].sort(sort_notes);
+  set_state('active_note',sort_note[0])
   console.log("not!",notes)
-  set_state('notes',notes)
+  set_state('notes',sort_note)
 
 },[]) 
 
@@ -38,39 +43,59 @@ console.log(note);
 
 },[])
 
-
+const handle_delete_note =React.useCallback(()=>{
+  if(confirm("Are you sure you want to delete this note, this action is irreversible")){
+    window.electron.delete_note(active_note.id.toString())
+  }
+},[active_note])
 // useLayoutEffect: مثل useEffect لكنه ينفّذ قبل رسم الواجهة (DOM Paint)
 // تستخدمه عندما بدك التغيير يصير مباشرة قبل ما الشاشة تنعرض
 React.useLayoutEffect(() => {
-  //  window.electron.fetch_all_notes();
-  // نضيف "listener" على window ليستقبل الحدث 'all-note-data'
+  
+ async function loadNotes() {
+    await window.electron.fetch_all_notes();
+  }
+  loadNotes();
+    // نضيف "listener" على window ليستقبل الحدث 'all-note-data'
   // هذا الحدث عم تجيبه من الـ Electron preload لما الداتا تتغيّر بالقاعدة
   window.addEventListener(
     'all-note-data',
     (ev: Event & { detail: INoteData[] }) => { 
+    const sorted = ev.detail.sort(sort_notes);
       // (ev.detail) يحتوي على كل الملاحظات الجديدة القادم من electron
 
       // نحط أول ملاحظة كـ "الملاحظة النشطة"
       // لأن ev.detail[0] يعني آخر نوت تم تعديلها (حسب ترتيبك)
       console.log("ev", ev.detail);
 
-      set_state('active_note', ev.detail[4]);
+      sorted.length ==0 ?  set_state('active_note', null): set_state('active_note', sorted[0]);
 
       // لعرض الملاحظات الجديدة على الكونسول
 
       // نخزن الملاحظات في الـ zustand store
       // حتى باقي الواجهة تعرف أنه تم تحديث قائمة الملاحظات
-      set_state('notes', ev.detail);
+      set_state('notes', sorted);
     }
   );
 
 }, []);  // [] يعني ينفّذ مرة واحدة فقط عند أول تحميل للصفحة
-
+ console.log("section",section_notes)
     return(
         <div className="h-[100vh] w-[100%]">
         <ResizablePanelGroup direction="horizontal">
         <ResizablePanel minSize={30} defaultSize={35}>
-          <div className="h-[40px] w-[100%] border-b-[.5px] border-b-stone-300 app-dragger dark:border-b-stone-800 bg-red-600 flex justify-center"></div>
+          <div className="h-[40px] w-[100%] border-b-[.5px] border-b-stone-300 app-dragger dark:border-b-stone-800  px-2 flex items-center justify-end">
+       
+            <span title="New note">
+             <PenBox onClick={handle_create_new_note} className="text-stone-900 dark:text-stone-100 h-[22px] w-[22px] cursor-pointer"/>
+            </span>
+            {          
+             notes.length >0 &&
+            <span title="Delete note">
+             <Trash onClick={handle_delete_note} className="text-stone-900 dark:text-stone-100 [&:hover]:text-red-600 h-[22px] w-[22px] ml-3 cursor-pointer"/>
+            </span>
+              }
+          </div>
 
           <ScrollArea className="h-[calc(100%-40px)]">
           {
@@ -84,17 +109,19 @@ React.useLayoutEffect(() => {
                   section={section}
                   data={section_notes[section as keyof typeof section_notes]}
                   onClick={handle_set_active_note}
+                  
                 />
-              ))
-          }
+             
+              )) 
+          }  
           </ScrollArea>
           
           </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel minSize={30}>
-          <div className="h-[40px] w-[100%]  border-b-[.5px] border-b-stone-300 app-dragger dark:border-b-stone-800 bg-red-600 f  lex justify-end">
+          <div className="h-[40px] w-[100%]  border-b-[.5px] border-b-stone-300 app-dragger dark:border-b-stone-800 bg-red-600 flex justify-end">
              {
-              !window.navigator.userAgent.toLowerCase().includes('mac') && //انوا نحنه windows
+              // !window.navigator.userAgent.toLowerCase().includes('mac') && //انوا نحنه windows
               <WindowButtons/>
              } 
           </div>

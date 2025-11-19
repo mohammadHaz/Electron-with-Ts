@@ -40,6 +40,14 @@ const config: ForgeConfig = {
               js: './src/preload.ts',
             },
           },
+          {
+            html: './src/index.html',
+            js: './src/child-process/renderer.ts',
+            name: 'child_window',
+            preload: {
+              js: './src/preload.ts',
+            },
+          },
         ],
       },
     }),

@@ -10,15 +10,23 @@ import { useMainStore } from "@/shared/zust-store";
 import { TNote } from "@/shared/types";
 export default React.memo((props:any)=>{
     const active_note =useMainStore(state=>state.active_note)
-    const editor_ref = React.useRef<EditorJS | undefined>(undefined)
+    const editor_ref = React.useRef<EditorJS | null>(null)
 
-
+// typeof real_note == 'string' ? JSON.parse(real_note as string) :
     React.useEffect(()=>{
         const real_note = props.note?.note || active_note.note
-        const note = typeof real_note == 'string' ? JSON.parse(real_note as string) : real_note
+        const note =  real_note;
         // console.log("Active note", active_note, typeof real_note, note);
 
-        if (editor_ref.current != undefined) editor_ref.current.destroy()
+    // إذا في Editor مسبق → دمّره  
+    if (editor_ref.current) {
+        try {
+            editor_ref.current.destroy();
+        } catch (e) {
+            console.warn("EditorJS destroy error:", e);
+        }
+        editor_ref.current = null;
+    }
         editor_ref.current =new EditorJS({
             holder:'editorjs-container',
             tools:{
@@ -34,7 +42,7 @@ export default React.memo((props:any)=>{
             },
             data: Object.keys(note).length == 0 ?  { time: Date.now(), blocks: [], version: '2.31.0' }  : note,
         });
-    },[])
+    },[active_note.id])
     return(
         <div id="editorjs-container" className="dark:[&_::selection]:bg-[oklch(37.4%_0.01_67.558)_!important] dark:[&_::selection]:text-white dark:[&_svg_path,_svg_line,_svg_rect]:stroke-[#ddd_!important] p-4 dark:text-white h-[100%] dark:[&_.ce-popover-item]:text-[white_!important] dark:[&__[class*=container]_::-webkit-scrollbar]:hidden dark:[&_.cdx-search-field]:bg-[oklch(37.4%_0.01_67.558)_!important] dark:[&_.ce-popover-item]:hover:bg-[oklch(37.4%_0.01_67.558)_!important] dark:[&_[class*=container]]:bg-[oklch(21.6%_0.006_56.043)_!important] dark:[&_[class*=container]]:border-[transparent_!important] dark:[&_[class*=plus]]:hover:bg-[oklch(37.4%_0.01_67.558)_!important]"></div>
     )

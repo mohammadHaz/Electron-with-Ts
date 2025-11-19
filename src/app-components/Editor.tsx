@@ -11,14 +11,15 @@ export default React.memo((props:any)=>{
             // console.log("database",data);
             window.electron.set_note({
                 id: props.note != undefined ? props.note.id : active_note.id,
-                note:JSON.stringify(data)
+                note:data
+                // note:JSON.stringify(data)
+               
             },true)
-
         })
     },[props.note || active_note])
     return(
         <ScrollArea className="h-[calc(100%-40px)]">
-         <EditorJSTemplate onChange={handle_change}/>
+         <EditorJSTemplate  onChange={handle_change}/>
         </ScrollArea >
     )
 })

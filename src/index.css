@@ -133,6 +133,6 @@ padding: 0px;
   -webkit-app-region:drag;
 }
 
-.app-dragger div{
+.app-dragger div ,.app-dragger svg{
   -webkit-app-region:none !important;
 }

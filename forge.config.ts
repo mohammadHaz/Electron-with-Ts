@@ -42,10 +42,10 @@ const config: ForgeConfig = {
           },
           {
             html: './src/index.html',
-            js: './src/child-process/renderer.ts',
+            js: './src/child-procress/renderer.ts',
             name: 'child_window',
             preload: {
-              js: './src/preload.ts',
+              js: './src/child-procress/preload.ts',
             },
           },
         ],

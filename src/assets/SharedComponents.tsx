@@ -45,7 +45,7 @@ export const NotesItem = React.memo((props: {note: INoteData; onClick:(Function)
         // className class مبني باستخدام مكتبة clsx
       // clsx تسمح بدمج كلاسات ثابتة + كلاسات شرطية
 
-        <div  className={clsx('w-[100%] p-4 [&.active]:rounded-2xl cursor-pointer',{'active':active_note.id==props.note.id})} onClick={()=>props.onClick(props.note)}>
+        <div onContextMenu={()=>window.electron.open_note_item_context_menu(props.note.id.toString())} className={clsx('w-[100%] p-4 [&.active]:rounded-2xl cursor-pointer',{'active':active_note.id==props.note.id})} onClick={()=>props.onClick(props.note)}>
               <div className='font-bold text-md' dangerouslySetInnerHTML={{__html:Object.keys((props.note.note as TNote)).length == 0 ? "New note" :(props.note.note as TNote)?.blocks?.[0]?.data?.text || "Untitled Note"}}>
               </div>
             <div className='flex text-xs text-stone-800 dark:text-stone-300'>

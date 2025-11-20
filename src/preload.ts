@@ -27,11 +27,15 @@ const renderer={
     minimizeApp:()=>{
         ipcRenderer.send('minimize-app')
     },
-    set_note: async (data: any, explicit=false): Promise<INoteData[]> => {
+    set_note: async (data: any, explicit=false,child=false): Promise<INoteData[]> => {
         const notes = await ipcRenderer.invoke('set-note', data)
         // console.log("notes", notes);
         if (explicit) {
             window.dispatchEvent(broadcast_event('all-note-data', notes));
+            return;
+        }
+        if (child) {
+            window.dispatchEvent(broadcast_event('one-note-child', notes));
             return;
         }
         return notes;
@@ -54,15 +58,11 @@ const renderer={
 
    },
 
-   get_note: async(note_id :string)=>{
-     return await  ipcRenderer.invoke("get-note",note_id);
-
-   },
-   open_note_in_child_proc:(note_id:string)=>{
-    ipcRenderer.send("open-note-in-child-process",note_id)
-   },
-   open_note_in_item_context:(note_id:string)=>{
-    ipcRenderer.send("open-note-in-item-context",note_id)
+//    open_note_in_child_proc:(note_id:string)=>{
+//     ipcRenderer.send("open-note-in-child-process",note_id)
+//    },
+   open_note_item_context_menu:(note_id:string)=>{
+    ipcRenderer.send("open-note-item-context-menu",note_id)
    }
    
 } 

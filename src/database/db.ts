@@ -57,13 +57,16 @@ export const get_all_notes = (callback: Function) => {
 
 export const get_note = (note_id: string, callback: Function) => {
     // دالة لجلب ملاحظة واحدة فقط حسب رقمها (id)
+
     db.serialize(() => {
         create_notes_table();
         // تأكد من وجود الجدول
         
-        db.get("SELECT * FROM notes WHERE id=",[note_id], (err, data) => {
+        db.get("SELECT * FROM notes WHERE id=?",note_id, (err, data) => {
             // تنفيذ استعلام لجلب الملاحظة التي id تبعها يساوي note_id
-            if (err) return null;
+            if (err){
+             return null;
+            }
             // في حال وجود خطأ لا تُرجع شيء
             
             callback(data);

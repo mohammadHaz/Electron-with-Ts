@@ -38,8 +38,6 @@ export const WindowButtons = React.memo(() => {
 
 export const NotesItem = React.memo((props: {note: INoteData; onClick:(Function)}) => {
     const active_note = useMainStore(state => state.active_note)
-     console.log("active_note",active_note)
-      console.log("active_note--1",props.note)
 
     return (
         // className class مبني باستخدام مكتبة clsx

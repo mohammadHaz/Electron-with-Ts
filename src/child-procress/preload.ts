@@ -10,6 +10,7 @@ import { contextBridge, ipcRenderer } from "electron";
 const renderer={
     closeApp:()=>{
         ipcRenderer.send('close-app')
+        
     },
     maximizeApp:()=>{
         ipcRenderer.send('maximize-app')
@@ -19,7 +20,8 @@ const renderer={
     },
 
    get_note: async(note_id : string) =>{
-     const note= await  ipcRenderer.invoke("get-note",note_id);
+     const note= await  ipcRenderer.invoke('get-note',note_id);
+    //  console.log(note)
      return note;
    },
 
@@ -27,7 +29,23 @@ const renderer={
     ipcRenderer.on("child-note-id", (_event, id) => {
         callback(id);
     });
+    },
+    set_note: async (data: any, explicit=false): Promise<INoteData[]> => {
+    const notes = await ipcRenderer.invoke('set-note', data)
+    console.log("notes", notes);
+
+    if (explicit) {
+      await  window.dispatchEvent(broadcast_event('all-note-data', notes));
+
+        return;
     }
+    return notes;
+     },
+    fetch_all_notess: async () => {
+    const all_notes = await ipcRenderer.invoke("fetch-all-notes");
+     window.dispatchEvent(broadcast_event('all-note-data', all_notes));
+    }
+
 } 
 
 contextBridge.exposeInMainWorld('electron',renderer)

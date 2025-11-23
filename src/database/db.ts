@@ -56,21 +56,28 @@ export const get_all_notes = (callback: Function) => {
 }
 
 export const get_note = (note_id: string, callback: Function) => {
-    // دالة لجلب ملاحظة واحدة فقط حسب رقمها (id)
+    console.log("📥 get_note CALLED with note_id =", note_id);
 
     db.serialize(() => {
         create_notes_table();
-        // تأكد من وجود الجدول
-        
-        db.get("SELECT * FROM notes WHERE id=?",note_id, (err, data) => {
-            // تنفيذ استعلام لجلب الملاحظة التي id تبعها يساوي note_id
-            if (err){
-             return null;
+
+        console.log("➡️ Executing SQL: SELECT * FROM notes WHERE id = ?", note_id);
+
+        db.get("SELECT * FROM notes WHERE id = ?", [note_id], (err, data) => {
+
+            if (err) {
+                console.log("❌ SQL ERROR:", err);
+                return callback(null);
             }
-            // في حال وجود خطأ لا تُرجع شيء
-            
+
+            if (!data) {
+                console.log("⚠️ No note found for id:", note_id);
+                return callback(null);
+            }
+
+            console.log("✅ SQL RESULT:", data);
+
             callback(data);
-            // إرسال الملاحظة الناتجة إلى callback
         });
     });
 }

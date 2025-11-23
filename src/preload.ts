@@ -53,6 +53,7 @@ const renderer={
     window.dispatchEvent(broadcast_event('all-note-data', all_notes));
     },
    delete_note : async (note_id:string)=>{
+      await ipcRenderer.send("close-child-window");
      const delete_note = await ipcRenderer.invoke("delete-note",note_id);
       window.dispatchEvent(broadcast_event('all-note-data', delete_note));
 
@@ -63,7 +64,10 @@ const renderer={
 //    },
    open_note_item_context_menu:(note_id:string)=>{
     ipcRenderer.send("open-note-item-context-menu",note_id)
-   }
+   },
+   set_dark_mode: (mode :boolean) => {
+    ipcRenderer.send("toggle-dark", mode);
+    },
    
 } 
 

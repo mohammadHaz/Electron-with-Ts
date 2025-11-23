@@ -12,6 +12,8 @@ declare const CHILD_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
+
+
 let mainWindow:BrowserWindow;
 const createWindow = (): void => {
   // Create the browser window.
@@ -71,6 +73,121 @@ ipcMain.on('minimize-app',(ev,argz)=>{
   mainWindow.minimize()
 })
           
+const isMac = process.platform === 'darwin'
+const template = [
+  // { role: 'appMenu' }
+  ...(isMac
+    ? [{
+        label: app.name,
+        submenu: [
+          { role: 'about' },
+          { type: 'separator' },
+          { role: 'services' },
+          { type: 'separator' },
+          { role: 'hide' },
+          { role: 'hideOthers' },
+          { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' }
+        ]
+      }]
+    : []),
+  // { role: 'fileMenu' }
+  {
+    label: 'File',
+    submenu: [
+      {label:"New note",click:()=>{
+          const dummy_date={
+            id:null  ,
+            note:"{}",
+          } as INoteData
+        set_notes(dummy_date, (data: any) => {
+        mainWindow.webContents.send('update-notes-data',data);
+      })
+      } },
+      isMac ? { role: 'close' } : { role: 'quit' }
+    ]
+  },
+  // { role: 'editMenu' }
+  {
+    label: 'Edit',
+    submenu: [
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      ...(isMac
+        ? [
+            { role: 'pasteAndMatchStyle' },
+            { role: 'delete' },
+            { role: 'selectAll' },
+            { type: 'separator' },
+            {
+              label: 'Speech',
+              submenu: [
+                { role: 'startSpeaking' },
+                { role: 'stopSpeaking' }
+              ]
+            }
+          ]
+        : [
+            { role: 'delete' },
+            { type: 'separator' },
+            { role: 'selectAll' }
+          ])
+    ]
+  },
+  // { role: 'viewMenu' }
+  {
+    label: 'View',
+    submenu: [
+      { role: 'reload' },
+      { role: 'forceReload' },
+      { role: 'toggleDevTools' },
+      { type: 'separator' },
+      { role: 'resetZoom' },
+      { role: 'zoomIn' },
+      { role: 'zoomOut' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' }
+    ]
+  },
+  // { role: 'windowMenu' }
+  {
+    label: 'Window',
+    submenu: [
+      { role: 'minimize' },
+      { role: 'zoom' },
+      ...(isMac
+        ? [
+            { type: 'separator' },
+            { role: 'front' },
+            { type: 'separator' },
+            { role: 'window' }
+          ]
+        : [
+            { role: 'close' }
+          ])
+    ]
+  },
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'Learn More',
+        click: async () => {
+          const { shell } = require('electron')
+          await shell.openExternal('https://electronjs.org')
+        }
+      }
+    ]
+  }
+]as any
+
+const menu = Menu.buildFromTemplate(template)
+Menu.setApplicationMenu(menu)
 
 ipcMain.handle('set-note', async (event, argz) => {
     // ev.sender.send()
@@ -96,11 +213,18 @@ function openNoteWindow(note_id: string) {
   });      
   childWindow.webContents.openDevTools();
   childWindow.loadURL(CHILD_WINDOW_WEBPACK_ENTRY);
+  
+ipcMain.on("close-child-window", () => {
+    if (childWindow && !childWindow.isDestroyed()) {
+        childWindow.close();
+    }
+});
 
   childWindow.webContents.on("did-finish-load", () => {
     // console.log("yessss", note_id )
     childWindow.webContents.send("child-note-id", note_id);
   }
+  
 )};
 
   ipcMain.on('open-note-item-context-menu',(ev,note_id)=>{
@@ -128,17 +252,20 @@ function openNoteWindow(note_id: string) {
 
 ipcMain.handle('get-note', async (event, note_id: string) => {
   return new Promise((resolve, reject) => {
-    get_note(note_id, (data:any) => {
-
-        // لو ما فيه نتيجة نرجع null أو reject
-    resolve(null);
-  
-    const parsedNote: INoteData = {
-      id: data.id,
-      note: JSON.parse(data.note),
-      };
-      resolve(parsedNote);
-
+    get_note(note_id, (data: any) => {
+      if (!data) {
+        return resolve(null); // فقط إذا ما فيه data
+      }
+      
+      try {
+        const parsedNote: INoteData = {
+          id: data.id,
+          note: JSON.parse(data.note),
+        };
+        resolve(parsedNote);
+      } catch (e) {
+        reject(e); // لو صار خطأ بالـ JSON
+      }
     });
   });
 });

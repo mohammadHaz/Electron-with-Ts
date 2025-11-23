@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -12,6 +12,7 @@ import { INoteData, TNote } from "@/shared/types"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { sectionize_notes } from "@/shared/functins"
 import { PenBox, Section, Trash } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 
 const sort_notes = (a: INoteData, b: INoteData) => {
   return (b.note as TNote).time - (a.note as TNote).time;
@@ -22,7 +23,7 @@ export default React.memo((props:any)=>{
   const set_state=useMainStore(state=>state.set_state);
   // const [notes,set_notes]=React.useState<INoteData[]>([])
 const section_notes = React.useMemo(() => sectionize_notes(notes), [notes]);
-
+const [dark_mode,setdarkmode]=useState<boolean>(localStorage.getItem('dark_mode')=='dark')
 
 const handle_create_new_note=React.useCallback(async()=>{
   const dummy_date={
@@ -48,6 +49,16 @@ const handle_delete_note =React.useCallback(()=>{
     window.electron.delete_note(active_note.id.toString())
   }
 },[active_note])
+
+const handle_Toggle_Dark_mode=React.useCallback(()=>{
+  const isDark =document.documentElement.classList.contains('dark')
+  localStorage.setItem('dark_mode',isDark ? 'light':'dark')
+  setdarkmode(!isDark)
+  isDark? document.documentElement.classList.remove('dark') :
+  document.documentElement.classList.add('dark')
+  window.electron.set_dark_mode(isDark);
+
+},[])
 // useLayoutEffect: مثل useEffect لكنه ينفّذ قبل رسم الواجهة (DOM Paint)
 // تستخدمه عندما بدك التغيير يصير مباشرة قبل ما الشاشة تنعرض
 React.useLayoutEffect(() => {
@@ -119,7 +130,12 @@ React.useLayoutEffect(() => {
           </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel minSize={30}>
-          <div className="h-[40px] w-[100%]  border-b-[.5px] border-b-stone-300 app-dragger dark:border-b-stone-800 bg-red-600 flex justify-end">
+          <div className="h-[40px] w-[100%] px-2  border-b-[.5px] border-b-stone-300 app-dragger dark:border-b-stone-800  flex justify-between items-center">
+             <div className="flex" onClick={handle_Toggle_Dark_mode}>
+             <small className="mr-2">Dark mode</small>
+             <Switch checked={dark_mode}/>
+
+             </div>
              {
               // !window.navigator.userAgent.toLowerCase().includes('mac') && //انوا نحنه windows
               <WindowButtons/>
@@ -128,7 +144,7 @@ React.useLayoutEffect(() => {
           {
             active_note == null ?
             <EmptyNoteUI onClick={handle_create_new_note}/>:
-             <Editor/>
+             <Editor  isChild={false}/>
           }
          
           </ResizablePanel>

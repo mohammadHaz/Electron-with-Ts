@@ -1,45 +1,25 @@
 import EditorJS from "@/app-components/Editor";
-import { INoteData } from "@/shared/types";
+import { INoteData, TNote } from "@/shared/types";
 import { useMainStore } from "@/shared/zust-store";
 import { X } from "lucide-react";
 import React from "react";
 
 export default React.memo((props:any)=>{
-  const active_note=useMainStore(state=>state.active_note)
   const [note,set_note1]=React.useState<INoteData | undefined>()
+
   const set_state=useMainStore(state=>state.set_state);
   const handle_get_note=React.useCallback( async()=>{
 window.electron.child_note_id(async (id) => { 
      console.log("NOTE:",typeof id );
-  const note = await window.electron.get_note(id);
-       console.log("NOTE1:", note); 
-
-
-
-  set_note1(note);
-}); 
+     const note1 :INoteData = await window.electron.get_note(id);
+     console.log("NOTE1:", note1); 
+     
+  set_note1(note1);
+   }); 
   },[])
 
   React.useLayoutEffect(()=>{
    handle_get_note();
-    //  window.addEventListener(
-    //    'one-note-child',
-    //    (ev: Event & { detail: INoteData[] }) => { 
-    //      // (ev.detail) يحتوي على كل الملاحظات الجديدة القادم من electron
-   
-    //      // نحط أول ملاحظة كـ "الملاحظة النشطة"
-    //      // لأن ev.detail[0] يعني آخر نوت تم تعديلها (حسب ترتيبك)
-    //      console.log("ev", ev.detail);
-   
-    //     set_state('active_note', ev.detail[0]);
-   
-    //      // لعرض الملاحظات الجديدة على الكونسول
-   
-    //      // نخزن الملاحظات في الـ zustand store
-    //      // حتى باقي الواجهة تعرف أنه تم تحديث قائمة الملاحظات
-    //      set_state('notes', ev.detail);
-    //    }
-    //  );
   },[])
     return(
         <div className="h-[1000vh] w-[100%]">
@@ -57,7 +37,7 @@ window.electron.child_note_id(async (id) => {
                     <span>Loading</span>
 
                 </div>:
-                <EditorJS note={note}/>
+                <EditorJS note={note} isChild={true}/>
 
             }
 
